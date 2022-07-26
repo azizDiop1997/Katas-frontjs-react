@@ -1,0 +1,19 @@
+.body{
+    margin: 0;
+}
+.app {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.home {
+    min-height: 100%;
+}
+
+.calendar-container{
+    height: calc(100vh - 20px);
+    min-width: 100%;
+    background-color: rgb(250, 244, 244);
+    border: 1px solid black;
+    border-radius: 3px;
+}
