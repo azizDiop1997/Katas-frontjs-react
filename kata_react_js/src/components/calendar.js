@@ -11,7 +11,7 @@ class Calendar extends Component {
 
         this.buildDatasource = this.buildDatasource.bind(this);
         this.findposition = this.findposition.bind(this);
-        // this.drawWindows = this.drawWindows.bind(this);
+
     }
 
     componentDidMount() {
@@ -25,7 +25,7 @@ class Calendar extends Component {
     buildDatasource(data) {
         let dataSource = [];
 
-        // ajout de nouveaux attibuts startTime(conversion de start en minutes), endTime(startTime + duration) dans l'objet dataSource
+        // ajout des attibuts startTime(conversion de start en minutes), endTime(startTime + duration) dans le dataSource
         data.forEach( (element, index) => {
             // hour * 60 + minutes
             let startTime = (parseInt(element.start.split(":")[0],10) * 60) + (parseInt(element.start.split(":")[1],10));
@@ -47,13 +47,21 @@ class Calendar extends Component {
             })
         })
 
-        //width
+        //width : width = 1 => 100% de la largeur; width = 2 => 50% de la largeur; width = 3 => 33% de la largeur
         dataSource.forEach( element => {
+            // si l'element a des voisins et pas de width
             if(element.voisins && element.voisins.length && !element.width) {
                 // cas avec plus de deux voisins
                 if(element.voisins.length >= 2) {
-                    element.width = 3;
-                    element.voisins.forEach( voisin => dataSource[voisin-1].width = 3);
+                    // si les deux voisins sont aussi voisins entre eux
+                    if( dataSource[element.voisins[0]-1].voisins.includes(element.voisins[1])) {
+                        element.width = 3;
+                        element.voisins.forEach( voisin => dataSource[voisin-1].width = 3);
+                    // sinon
+                    } else {
+                        element.width = 2;
+                        element.voisins.forEach( voisin => dataSource[voisin-1].width = 2);
+                    }
                 // cas avec 1 voisin
                 } else if(element.voisins.length === 1) {
                     if(dataSource[element.voisins[0]-1].width === 3){
@@ -64,6 +72,7 @@ class Calendar extends Component {
                         element.width = 2;
                     } 
                 }
+            // si l'element n'a pas voisin
             } else if( !(element.voisins && element.voisins.length)) {
                 element.width = 1;
             }
@@ -77,10 +86,12 @@ class Calendar extends Component {
         this.setState({dataSource});
     }
 
+    // Define position for each windows
     findposition( element, dataSource) {
         if( element.width === 1) {
             return 1;
         } else if(element.width === 2) {
+            // si le voisin est deja positionné
             if(dataSource[element.voisins[0]-1].position) {
                 if(dataSource[element.voisins[0]-1].position === 1) {
                     return 2;
@@ -90,9 +101,10 @@ class Calendar extends Component {
             } else {
                 return 1;
             }
+        // Si le voisin n'est pas positionné
         } else if(element.width === 3) {
             let tabPos = [1,2,3];
-            // let pos = 1;
+            // donner la position restante
             element.voisins.forEach( voisin => {
                 if( dataSource[voisin-1].position ) {
                     tabPos.splice(tabPos.findIndex( value => value === dataSource[voisin-1].position),1);
@@ -103,37 +115,6 @@ class Calendar extends Component {
         }
     }
 
-    // drawWindows(dataSource) {
-    //     // const dataSource = this.state.dataSource;
-    //     // let elements = [];
-
-    //     if(dataSource) {
-    //         dataSource.map( element => {
-    //             // let iDiv = document.createElement('div');
-    //             // iDiv.id = element.id;
-    //             // iDiv.style.position = "absolute";
-    //             // iDiv.style.top = "50%";
-    //             // iDiv.style.let = "50%";
-    //             // document.getElementById("container").appendChild(iDiv);
-
-    //             // define top, height, width value for windows
-    //             let topValue = (element.startTime*100) / 1440 ;
-    //             let heightValue = (element.duration*100) /1440;
-
-    //             // style for div
-    //             const style = {
-    //                 position: "absolute",
-    //                 backgroundColor : "#00000",
-    //                 top : topValue + "%",
-    //                 left : "0%",
-    //                 height : heightValue + "%"
-    //             }
-                
-    //             return <div className="">{element.id}</div>
-    //         })
-    //     }
-    // }
-
     render() {
 
         const { dataSource } = this.state;
@@ -142,9 +123,9 @@ class Calendar extends Component {
                 {dataSource && <div>
                     {dataSource.map(element => {
                         let topValue, heightValue, widthValue, leftValue;
-                        topValue = (element.startTime*100) / 1440 ;
-                        heightValue = (element.duration*100) /1440;
-                        widthValue = 120/element.width - 4;
+                        topValue = (element.startTime * 100) / 1440 ;
+                        heightValue = (element.duration * 100) / 1440;
+                        widthValue = (120 / element.width) - 4;
                         if( element.width === 3) {
                             if( element.position === 1) 
                                 leftValue =  20;
@@ -172,7 +153,7 @@ class Calendar extends Component {
                             border : "1px dashed #000000"                        
                         }
 
-                        return <div style={style} className="">{element.id}</div>
+                        return <div style={style} className=""></div>
                     })}
                 </div>}
                     
